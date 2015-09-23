@@ -11,19 +11,18 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package io.github.furti.beagleio.gpio;
+package io.github.furti.beagleio.gpio.local;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.nio.file.Files;
-import java.nio.file.OpenOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 
 import io.github.furti.beagleio.Direction;
 import io.github.furti.beagleio.Pin;
+import io.github.furti.beagleio.gpio.GpioConstants;
 
 /**
  * Wraps the underlying files for the GPIO pin and exposes some functionality to configure, read and
@@ -34,14 +33,12 @@ import io.github.furti.beagleio.Pin;
  */
 public class PinDirectory
 {
-  private Pin pin;
   private Path directionPath;
   private Path valuePath;
 
   public PinDirectory(Pin pin)
   {
     super();
-    this.pin = pin;
 
     Path pinDirectory = Paths.get(GpioConstants.BASE_DIRECTORY, "gpio",
         pin.getKernelNumber().toString());
