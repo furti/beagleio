@@ -13,37 +13,15 @@
  */
 package io.github.furti.beagleio;
 
+import io.github.furti.beagleio.gpio.AbstractBeagle;
+import io.github.furti.beagleio.gpio.PinManager;
+
 /**
  * @author Daniel
  *
  */
-public class SomeTestBeagle implements Beagle
+public class SomeTestBeagle extends AbstractBeagle
 {
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see io.github.furti.beagleio.Beagle#initializePin(io.github.furti.beagleio.Direction, boolean)
-   */
-  @Override
-  public void initializePin(Direction direction, boolean activeLow) throws BeagleIOException
-  {
-    // TODO Auto-generated method stub
-
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see io.github.furti.beagleio.Beagle#closePin()
-   */
-  @Override
-  public void closePin() throws BeagleIOException
-  {
-    // TODO Auto-generated method stub
-
-  }
-
   /*
    * (non-Javadoc)
    * 
@@ -54,6 +32,19 @@ public class SomeTestBeagle implements Beagle
   {
     // TODO Auto-generated method stub
 
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * io.github.furti.beagleio.gpio.AbstractBeagle#createPinManager(io.github.furti.beagleio.Pin)
+   */
+  @Override
+  protected PinManager createPinManager(Pin pin)
+  {
+    // TODO Auto-generated method stub
+    return null;
   }
 
 }

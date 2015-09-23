@@ -18,9 +18,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import io.github.furti.beagleio.Beagle;
 import io.github.furti.beagleio.BeagleIOException;
-import io.github.furti.beagleio.Direction;
+import io.github.furti.beagleio.Pin;
+import io.github.furti.beagleio.gpio.AbstractBeagle;
+import io.github.furti.beagleio.gpio.PinManager;
+import io.github.furti.beagleio.gpio.util.FileUtils;
 
 /**
  * A Beagle implementation that creates a tmp directory on the filesystem with the same layout as
@@ -30,7 +32,7 @@ import io.github.furti.beagleio.Direction;
  * @author Daniel
  *
  */
-public class TemporaryFilesystemBeagle implements Beagle
+public class TemporaryFilesystemBeagle extends AbstractBeagle
 {
   private Path baseDirectory;
 
@@ -41,30 +43,6 @@ public class TemporaryFilesystemBeagle implements Beagle
   public TemporaryFilesystemBeagle() throws IOException
   {
     this.setupTmpDirectory();
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see io.github.furti.beagleio.Beagle#initializePin(io.github.furti.beagleio.Direction, boolean)
-   */
-  @Override
-  public void initializePin(Direction direction, boolean activeLow) throws BeagleIOException
-  {
-    // TODO Auto-generated method stub
-
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see io.github.furti.beagleio.Beagle#closePin()
-   */
-  @Override
-  public void closePin() throws BeagleIOException
-  {
-    // TODO Auto-generated method stub
-
   }
 
   private void setupTmpDirectory() throws IOException
@@ -83,10 +61,22 @@ public class TemporaryFilesystemBeagle implements Beagle
   {
     try
     {
-      Files.deleteIfExists(baseDirectory);
+      FileUtils.deleteDirectory(baseDirectory);
     } catch (IOException e)
     {
       throw new BeagleIOException("Error deleting tmp directory", e);
     }
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * io.github.furti.beagleio.gpio.AbstractBeagle#createPinManager(io.github.furti.beagleio.Pin)
+   */
+  @Override
+  protected PinManager createPinManager(Pin pin)
+  {
+    return new TemporaryFilePinManager(pin, baseDirectory);
   }
 }

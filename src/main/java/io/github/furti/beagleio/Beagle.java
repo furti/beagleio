@@ -27,9 +27,9 @@ public interface Beagle
    *
    * @see #initializePin(Direction, boolean) initializePin(Direction, boolean) for further details
    */
-  default void initializPin(Direction direction)
+  default void initializePin(Pin pin, Direction direction)
   {
-    this.initializePin(direction, false);
+    this.initializePin(pin, direction, false);
   }
 
   /**
@@ -49,20 +49,22 @@ public interface Beagle
    * {@link BeagleIOException}</b>
    * <p>
    * 
+   * @param pin the Pin to initialize.
    * @param direction the direction to set for the Pin. When setting it to {@link Direction#OUT}
    *        have a look at it's JavaDoc for further details.
    * @param activeLow if set to true the logic for hight and low for this Pin will be reversed. So
    *        3.3V on the Pin will be LOW and 0V on the Pin will be HIGH.
    * @throws BeagleIOException if an exeption occurs configuring the Pin.
    */
-  void initializePin(Direction direction, boolean activeLow) throws BeagleIOException;
+  void initializePin(Pin pin, Direction direction, boolean activeLow) throws BeagleIOException;
 
   /**
    * Closes the Pin so that it can be used for other purposes.
    * 
+   * @param pin the Pin to close.
    * @throws BeagleIOException if an execption occurs while closing the Pin.
    */
-  void closePin() throws BeagleIOException;
+  void closePin(Pin pin) throws BeagleIOException;
 
   /**
    * Releases the Beagle and closes all used Resources.
