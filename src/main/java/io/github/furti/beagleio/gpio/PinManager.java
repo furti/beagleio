@@ -16,15 +16,37 @@ package io.github.furti.beagleio.gpio;
 import io.github.furti.beagleio.Direction;
 
 /**
+ * Interface that encapsulates the operations that are available on a pin.
+ * 
+ * Each operation must not be executed immediate but must be queued instead. The queued operations
+ * are then executed when the {@link #performOutstandingOperations()} method is called.
+ * 
  * @author Daniel
  *
  */
 public interface PinManager
 {
 
+  /**
+   * Sets the direction of the pin.
+   * 
+   * @param direction the direction to set
+   * @return the instance for a fluent API
+   */
   PinManager setDirection(Direction direction);
 
+  /**
+   * Sets the activeLow value.
+   * 
+   * @param activeLow the value to set
+   * @return the instance for a fluent API
+   */
   PinManager setActiveLow(boolean activeLow);
 
+  /**
+   * Executes all the queued operations.
+   * 
+   * @return the instance for a fluent API
+   */
   PinManager performOutstandingOperations();
 }
