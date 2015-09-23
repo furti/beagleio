@@ -7,6 +7,15 @@
 	<name>BeagleIO</name>
 	<description>Java library to control the GPIO Ports of the beaglebone black</description>
 
+	<dependencies>
+		<dependency>
+			<groupId>org.testng</groupId>
+			<artifactId>testng</artifactId>
+			<version>6.9.6</version>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+
 	<build>
 		<plugins>
 			<plugin>
