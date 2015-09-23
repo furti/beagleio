@@ -11,17 +11,21 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package io.github.furti.beagleio.gpio.inmemory;
+package io.github.furti.beagleio.gpio.temporary;
 
 import io.github.furti.beagleio.Beagle;
 import io.github.furti.beagleio.BeagleIOException;
 import io.github.furti.beagleio.Direction;
 
 /**
+ * A Beagle implementation that creates a tmp directory on the filesystem with the same layout as
+ * the GPIO Filesystem on the BeagleBone Black. This can be used on development Machines without a
+ * GPIO System to thest the functionality of the application.
+ * 
  * @author Daniel
  *
  */
-public class InMemoryBeagle implements Beagle
+public class TemporaryFilesystemBeagle implements Beagle
 {
 
   /*

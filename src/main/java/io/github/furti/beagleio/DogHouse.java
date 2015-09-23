@@ -13,9 +13,9 @@
  */
 package io.github.furti.beagleio;
 
-import io.github.furti.beagleio.gpio.inmemory.InMemoryBeagle;
 import io.github.furti.beagleio.gpio.local.LocalBeagle;
 import io.github.furti.beagleio.gpio.remote.RemoteBeagle;
+import io.github.furti.beagleio.gpio.temporary.TemporaryFilesystemBeagle;
 
 /**
  * Factory for creating Beagles :)
@@ -45,7 +45,7 @@ public final class DogHouse
    * <li><b>local</b>: Instantiates a {@link LocalBeagle} that operates on the local System</li>
    * <li><b>remote</b>: Instantiates a {@link RemoteBeagle} that sends all operations over the
    * network to an remote BeagleBone</li>
-   * <li><b>inmemory</b>: Instantiates A {@link InMemoryBeagle} that is a dummy implementation for
+   * <li><b>inmemory</b>: Instantiates A {@link TemporaryFilesystemBeagle} that is a dummy implementation for
    * Development Systems that do not contain a GPIO System.</li>
    * </ul>
    * 
@@ -67,8 +67,8 @@ public final class DogHouse
         case "local":
           dogClass = LocalBeagle.class;
           break;
-        case "inmemory":
-          dogClass = InMemoryBeagle.class;
+        case "temporary":
+          dogClass = TemporaryFilesystemBeagle.class;
           break;
         case "remote":
           dogClass = RemoteBeagle.class;

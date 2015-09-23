@@ -6,9 +6,9 @@ import static org.junit.Assert.assertThat;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
-import io.github.furti.beagleio.gpio.inmemory.InMemoryBeagle;
 import io.github.furti.beagleio.gpio.local.LocalBeagle;
 import io.github.furti.beagleio.gpio.remote.RemoteBeagle;
+import io.github.furti.beagleio.gpio.temporary.TemporaryFilesystemBeagle;
 
 public class DogHouseTest
 {
@@ -49,9 +49,9 @@ public class DogHouseTest
   @Test
   public void callDogByClass()
   {
-    Beagle beagle = DogHouse.callDog(InMemoryBeagle.class);
+    Beagle beagle = DogHouse.callDog(TemporaryFilesystemBeagle.class);
 
-    assertThat(beagle.getClass(), equalTo(InMemoryBeagle.class));
+    assertThat(beagle.getClass(), equalTo(TemporaryFilesystemBeagle.class));
   }
 
   @Test(expectedExceptions = BeagleIOException.class)
@@ -65,7 +65,7 @@ public class DogHouseTest
   {
     return new Object[][] {
         {null, LocalBeagle.class},
-        {"inmemory", InMemoryBeagle.class},
+        {"temporary", TemporaryFilesystemBeagle.class},
         {"local", LocalBeagle.class},
         {"remote", RemoteBeagle.class},
         {"io.github.furti.beagleio.SomeTestBeagle", SomeTestBeagle.class}
