@@ -63,4 +63,11 @@ public interface Beagle
    * @throws BeagleIOException if an execption occurs while closing the Pin.
    */
   void closePin() throws BeagleIOException;
+
+  /**
+   * Releases the Beagle and closes all used Resources.
+   * 
+   * @throws BeagleIOException if an exception occurs closing used Resources.
+   */
+  void release() throws BeagleIOException;
 }

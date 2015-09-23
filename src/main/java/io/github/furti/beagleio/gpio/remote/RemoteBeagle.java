@@ -48,4 +48,14 @@ public class RemoteBeagle implements Beagle
 
   }
 
+  /* (non-Javadoc)
+   * @see io.github.furti.beagleio.Beagle#release()
+   */
+  @Override
+  public void release() throws BeagleIOException
+  {
+    // TODO Auto-generated method stub
+    
+  }
+
 }

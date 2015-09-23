@@ -20,14 +20,20 @@ public class DogHouseTest
     {
       System.setProperty(DogHouse.DOG_CLASS_PROPERTY, systemProperty);
     }
+    Beagle actualBeagle = null;
 
     try
     {
-      Beagle actualBeagle = DogHouse.callDog();
+      actualBeagle = DogHouse.callDog();
       assertThat(actualBeagle.getClass(), equalTo(expectedDogClass));
     } finally
     {
       System.clearProperty(DogHouse.DOG_CLASS_PROPERTY);
+
+      if (actualBeagle != null)
+      {
+        actualBeagle.release();
+      }
     }
   }
 
@@ -50,6 +56,7 @@ public class DogHouseTest
   public void callDogByClass()
   {
     Beagle beagle = DogHouse.callDog(TemporaryFilesystemBeagle.class);
+    beagle.release();
 
     assertThat(beagle.getClass(), equalTo(TemporaryFilesystemBeagle.class));
   }

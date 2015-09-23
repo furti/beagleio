@@ -13,6 +13,11 @@
  */
 package io.github.furti.beagleio.gpio.temporary;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
 import io.github.furti.beagleio.Beagle;
 import io.github.furti.beagleio.BeagleIOException;
 import io.github.furti.beagleio.Direction;
@@ -27,6 +32,16 @@ import io.github.furti.beagleio.Direction;
  */
 public class TemporaryFilesystemBeagle implements Beagle
 {
+  private Path baseDirectory;
+
+  /**
+   * @throws IOException if an exception occurs creating the tmp directory.
+   * 
+   */
+  public TemporaryFilesystemBeagle() throws IOException
+  {
+    this.setupTmpDirectory();
+  }
 
   /*
    * (non-Javadoc)
@@ -52,4 +67,26 @@ public class TemporaryFilesystemBeagle implements Beagle
 
   }
 
+  private void setupTmpDirectory() throws IOException
+  {
+    baseDirectory = Paths.get(System.getProperty("java.io.tmpdir"), "beagleio");
+    Files.createDirectories(baseDirectory);
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see io.github.furti.beagleio.Beagle#release()
+   */
+  @Override
+  public void release() throws BeagleIOException
+  {
+    try
+    {
+      Files.deleteIfExists(baseDirectory);
+    } catch (IOException e)
+    {
+      throw new BeagleIOException("Error deleting tmp directory", e);
+    }
+  }
 }
