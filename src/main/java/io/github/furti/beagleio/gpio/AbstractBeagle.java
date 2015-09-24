@@ -23,6 +23,7 @@ import io.github.furti.beagleio.Beagle;
 import io.github.furti.beagleio.BeagleIOException;
 import io.github.furti.beagleio.Direction;
 import io.github.furti.beagleio.Pin;
+import io.github.furti.beagleio.PinValue;
 
 /**
  * Base implementation of a Beagle that handles some common functionality.
@@ -54,6 +55,21 @@ public abstract class AbstractBeagle implements Beagle
     pins.put(pin, pinManager);
   }
 
+  @Override
+  public void setPinValue(Pin pin, PinValue value)
+  {
+    findPinManager(pin)
+        .setValue(value)
+        .performOutstandingOperations();
+  }
+
+  @Override
+  public PinValue getPinValue(Pin pin)
+  {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
   /*
    * (non-Javadoc)
    * 
@@ -66,6 +82,22 @@ public abstract class AbstractBeagle implements Beagle
         .release()
         .performOutstandingOperations();
 
+    pins.remove(pin);
+  }
+
+  @Override
+  public void release() throws BeagleIOException
+  {
+    // At first we should release all pins so that all Resources are closed.
+    for (PinManager pinManager : pins.values())
+    {
+      pinManager
+          .release()
+          .performOutstandingOperations();
+    }
+
+    // After all pins are closed we let the implementation do its custom work.
+    doRelease();
   }
 
   /**
@@ -87,4 +119,9 @@ public abstract class AbstractBeagle implements Beagle
    * @return
    */
   protected abstract PinManager createPinManager(Pin pin);
+
+  /**
+   * Is called by the Beagle in the release phase to let implementations do custom cleanup.
+   */
+  protected abstract void doRelease();
 }

@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.function.Consumer;
 
 import io.github.furti.beagleio.Direction;
+import io.github.furti.beagleio.PinValue;
 
 /**
  * @author Daniel
@@ -49,6 +50,13 @@ public abstract class AbstractPinManager implements PinManager
   public PinManager setActiveLow(boolean activeLow)
   {
     addOperation(this::doSetActiveLow, activeLow);
+    return this;
+  }
+
+  @Override
+  public PinManager setValue(PinValue value)
+  {
+    addOperation(this::doSetValue, value);
     return this;
   }
 
@@ -118,6 +126,13 @@ public abstract class AbstractPinManager implements PinManager
    * @param activeLow the activeLow value to set
    */
   protected abstract void doSetActiveLow(boolean activeLow);
+
+  /**
+   * Let the implementation acutally set the value.
+   * 
+   * @param value The value to set
+   */
+  protected abstract void doSetValue(PinValue value);
 
   /**
    * Let the implementation actually release all open Resources.

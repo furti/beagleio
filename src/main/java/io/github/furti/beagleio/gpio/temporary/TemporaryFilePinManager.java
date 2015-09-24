@@ -13,8 +13,10 @@
  */
 package io.github.furti.beagleio.gpio.temporary;
 
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
@@ -25,6 +27,7 @@ import java.util.Set;
 import io.github.furti.beagleio.BeagleIOException;
 import io.github.furti.beagleio.Direction;
 import io.github.furti.beagleio.Pin;
+import io.github.furti.beagleio.PinValue;
 import io.github.furti.beagleio.gpio.AbstractPinManager;
 import io.github.furti.beagleio.gpio.util.FileUtils;
 
@@ -104,6 +107,42 @@ public class TemporaryFilePinManager extends AbstractPinManager
     writeToFile(activeLowFile, activeLow ? Integer.valueOf(1) : Integer.valueOf(0));
   }
 
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * io.github.furti.beagleio.gpio.AbstractPinManager#doSetValue(io.github.furti.beagleio.PinValue)
+   */
+  @Override
+  protected void doSetValue(PinValue value)
+  {
+    writeToFile(valueFile, value.getValue());
+  }
+
+  @Override
+  protected PinValue doGetValue()
+  {
+    return PinValue.forValue(readFromFile(valueFile));
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see io.github.furti.beagleio.gpio.AbstractPinManager#doRelease()
+   */
+  @Override
+  protected void doRelease()
+  {
+    try
+    {
+      FileUtils.deleteDirectory(pinDirectory);
+    } catch (IOException e)
+    {
+      throw new BeagleIOException("An error occured while deleting the temporary Pin Directory "
+          + pinDirectory, e);
+    }
+  }
+
   /**
    * @param path to write to
    * @param value to write to the file. The toString method is used to obtain the actual value to
@@ -111,12 +150,28 @@ public class TemporaryFilePinManager extends AbstractPinManager
    */
   private void writeToFile(Path path, Object value)
   {
-    try (BufferedWriter writer = Files.newBufferedWriter(path, StandardOpenOption.WRITE))
+    try (BufferedWriter writer = Files.newBufferedWriter(path, Charset.defaultCharset(),
+        StandardOpenOption.WRITE))
     {
       writer.write(value.toString());
     } catch (IOException e)
     {
       throw new BeagleIOException("Error writing value " + value + " to file " + path, e);
+    }
+  }
+
+  /**
+   * @param path The path to read from
+   * @return The content of the file
+   */
+  private String readFromFile(Path path)
+  {
+    try (BufferedReader reader = Files.newBufferedReader(path, Charset.defaultCharset()))
+    {
+      return reader.readLine();
+    } catch (IOException e)
+    {
+      throw new BeagleIOException("Error reading value from file " + path, e);
     }
   }
 
@@ -143,24 +198,6 @@ public class TemporaryFilePinManager extends AbstractPinManager
       permissions.add(PosixFilePermission.OWNER_WRITE);
       permissions.add(PosixFilePermission.OWNER_EXECUTE);
       Files.setPosixFilePermissions(path, permissions);
-    }
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see io.github.furti.beagleio.gpio.AbstractPinManager#doRelease()
-   */
-  @Override
-  protected void doRelease()
-  {
-    try
-    {
-      FileUtils.deleteDirectory(pinDirectory);
-    } catch (IOException e)
-    {
-      throw new BeagleIOException("An error occured while deleting the temporary Pin Directory "
-          + pinDirectory, e);
     }
   }
 }

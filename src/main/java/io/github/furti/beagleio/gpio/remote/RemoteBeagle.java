@@ -50,4 +50,14 @@ public class RemoteBeagle extends AbstractBeagle
     return null;
   }
 
+  /* (non-Javadoc)
+   * @see io.github.furti.beagleio.gpio.AbstractBeagle#doRelease()
+   */
+  @Override
+  protected void doRelease()
+  {
+    // TODO Auto-generated method stub
+    
+  }
+
 }

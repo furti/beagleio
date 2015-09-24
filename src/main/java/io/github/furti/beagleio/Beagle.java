@@ -13,6 +13,9 @@
  */
 package io.github.furti.beagleio;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Interface to communicate with the GPIO System on a BeagleBone Black.
  * 
@@ -89,6 +92,46 @@ public interface Beagle
     {
       this.initializePin(pin, direction, activeLow);
     }
+  }
+
+  /**
+   * @param pin the pin to set the value for.
+   * @param value The value to set for the pin.
+   */
+  void setPinValue(Pin pin, PinValue value);
+
+  /**
+   * @param pins The Pins to set the value for
+   * @param value The value to set for the pins
+   */
+  default void setPinsValue(PinGroup pins, PinValue value)
+  {
+    for (Pin pin : pins.getPins())
+    {
+      this.setPinValue(pin, value);
+    }
+  }
+
+  /**
+   * @param pin The Pin to read the value from
+   * @return The Pins current value
+   */
+  PinValue getPinValue(Pin pin);
+
+  /**
+   * @param pins The Pins to get the Value for
+   * @return A Map that contains the Pins and their values
+   */
+  default Map<Pin, PinValue> getPinsValue(PinGroup pins)
+  {
+    Map<Pin, PinValue> result = new HashMap<>();
+
+    for (Pin pin : pins.getPins())
+    {
+      result.put(pin, this.getPinValue(pin));
+    }
+
+    return result;
   }
 
   /**

@@ -57,7 +57,7 @@ public class TemporaryFilesystemBeagle extends AbstractBeagle
    * @see io.github.furti.beagleio.Beagle#release()
    */
   @Override
-  public void release() throws BeagleIOException
+  public void doRelease()
   {
     try
     {

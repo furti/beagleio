@@ -14,6 +14,7 @@
 package io.github.furti.beagleio.gpio;
 
 import io.github.furti.beagleio.Direction;
+import io.github.furti.beagleio.PinValue;
 
 /**
  * Interface that encapsulates the operations that are available on a pin.
@@ -60,4 +61,10 @@ public interface PinManager
    * @return the instance for a fluent API
    */
   PinManager release();
+
+  /**
+   * @param value The value to set for the pin.
+   * @return the instance for a fluent API
+   */
+  PinManager setValue(PinValue value);
 }

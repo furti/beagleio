@@ -23,13 +23,14 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
-import org.testng.annotations.AfterTest;
+import org.testng.annotations.AfterMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import io.github.furti.beagleio.Beagle;
 import io.github.furti.beagleio.Direction;
 import io.github.furti.beagleio.Pin;
+import io.github.furti.beagleio.PinValue;
 import io.github.furti.beagleio.gpio.temporary.TemporaryFilesystemBeagle;
 import io.github.furti.beagleio.gpio.util.FileUtils;
 
@@ -40,11 +41,12 @@ import io.github.furti.beagleio.gpio.util.FileUtils;
 public class TemporaryFilesystemBeagleTest
 {
   private Path tmpDir = Paths.get(System.getProperty("java.io.tmpdir"), "beagleio");
+  private Beagle beagle = null;
 
   @Test
   public void tmpDirCreatedOnInstantiation() throws IOException
   {
-    new TemporaryFilesystemBeagle();
+    beagle = new TemporaryFilesystemBeagle();
 
     assertThat("Tmp Directory should exist", Files.exists(tmpDir), equalTo(true));
   }
@@ -52,7 +54,7 @@ public class TemporaryFilesystemBeagleTest
   @Test
   public void tmpDirRemovedOnRelease() throws IOException
   {
-    Beagle beagle = new TemporaryFilesystemBeagle();
+    beagle = new TemporaryFilesystemBeagle();
     beagle.release();
 
     assertThat("Tmp Directory should not exist anymore", Files.exists(tmpDir), equalTo(false));
@@ -61,7 +63,7 @@ public class TemporaryFilesystemBeagleTest
   @Test(dataProvider = "pinDirectoriesCreatedData")
   public void pinDirectoryCreated(Pin pin) throws IOException
   {
-    Beagle beagle = new TemporaryFilesystemBeagle();
+    beagle = new TemporaryFilesystemBeagle();
 
     beagle.initializePin(pin, Direction.IN);
 
@@ -79,7 +81,7 @@ public class TemporaryFilesystemBeagleTest
   @Test(dataProvider = "pinInitializedData")
   public void pinInitialized(Pin pin, Direction direction, boolean activeLow) throws IOException
   {
-    Beagle beagle = new TemporaryFilesystemBeagle();
+    beagle = new TemporaryFilesystemBeagle();
 
     beagle.initializePin(pin, direction, activeLow);
 
@@ -92,12 +94,34 @@ public class TemporaryFilesystemBeagleTest
   @Test(dataProvider = "pinReleasedData")
   public void pinReleased(Pin pin) throws IOException
   {
-    Beagle beagle = new TemporaryFilesystemBeagle();
+    beagle = new TemporaryFilesystemBeagle();
 
     beagle.initializePin(pin, Direction.IN);
     beagle.closePin(pin);
 
     fileNotExists(tmpDir.resolve(pin.toString()), "Pin Directory does not exist anymore");
+  }
+
+  @Test
+  public void setPinValue() throws IOException
+  {
+    beagle = new TemporaryFilesystemBeagle();
+    Pin pin = Pin.P8_03;
+    Path pinDirectory = tmpDir.resolve(pin.toString());
+
+    beagle.initializePin(pin, Direction.OUT);
+
+    try
+    {
+      beagle.setPinValue(pin, PinValue.HIGH);
+      hasContent(pinDirectory.resolve("value"), "1", "Value should be high");
+
+      beagle.setPinValue(pin, PinValue.LOW);
+      hasContent(pinDirectory.resolve("value"), "0", "Value should be low");
+    } finally
+    {
+      beagle.closePin(pin);
+    }
   }
 
   @DataProvider
@@ -130,10 +154,20 @@ public class TemporaryFilesystemBeagleTest
     };
   }
 
-  @AfterTest
+  @AfterMethod
   public void cleanup() throws IOException
   {
-    FileUtils.deleteDirectory(tmpDir);
+    try
+    {
+      if (beagle != null)
+      {
+        beagle.release();
+        beagle = null;
+      }
+    } finally
+    {
+      FileUtils.deleteDirectory(tmpDir);
+    }
   }
 
   private void fileExists(Path path, String message)
