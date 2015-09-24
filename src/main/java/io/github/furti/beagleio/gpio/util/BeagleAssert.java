@@ -16,6 +16,8 @@ package io.github.furti.beagleio.gpio.util;
 import io.github.furti.beagleio.BeagleIOException;
 
 /**
+ * Assertion Helpers that throw a {@link BeagleIOException}.
+ * 
  * @author Daniel
  *
  */
@@ -28,7 +30,7 @@ public final class BeagleAssert
   }
 
   /**
-   * If the object is not null a {@link BeagleIOException} is thrown.
+   * If the object is not null a {@link BeagleIOException} will thrown.
    * 
    * @param o object to check
    * @param message for the exception
@@ -37,6 +39,21 @@ public final class BeagleAssert
   public static void isNull(Object o, String message, Object... arguments)
   {
     if (o != null)
+    {
+      doThrow(message, arguments);
+    }
+  }
+
+  /**
+   * If the object is null a {@link BeagleIOException} will be thrown.
+   * 
+   * @param o object to check
+   * @param message for the exception
+   * @param arguments for the message
+   */
+  public static void isNotNull(Object o, String message, Object... arguments)
+  {
+    if (o == null)
     {
       doThrow(message, arguments);
     }
