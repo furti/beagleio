@@ -34,6 +34,7 @@ import io.github.furti.beagleio.gpio.util.FileUtils;
  */
 public class TemporaryFilePinManager extends AbstractPinManager
 {
+  private Path pinDirectory;
   private Path activeLowFile;
   private Path directionFile;
   private Path edgeFile;
@@ -57,8 +58,11 @@ public class TemporaryFilePinManager extends AbstractPinManager
    */
   protected void initPinDirectory(Path pinDirectory)
   {
+    this.pinDirectory = pinDirectory;
+
     try
     {
+
       if (!Files.exists(pinDirectory))
       {
         Files.createDirectory(pinDirectory);
@@ -139,6 +143,24 @@ public class TemporaryFilePinManager extends AbstractPinManager
       permissions.add(PosixFilePermission.OWNER_WRITE);
       permissions.add(PosixFilePermission.OWNER_EXECUTE);
       Files.setPosixFilePermissions(path, permissions);
+    }
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see io.github.furti.beagleio.gpio.AbstractPinManager#doRelease()
+   */
+  @Override
+  protected void doRelease()
+  {
+    try
+    {
+      FileUtils.deleteDirectory(pinDirectory);
+    } catch (IOException e)
+    {
+      throw new BeagleIOException("An error occured while deleting the temporary Pin Directory "
+          + pinDirectory, e);
     }
   }
 }

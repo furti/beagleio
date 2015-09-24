@@ -13,6 +13,7 @@
  */
 package io.github.furti.beagleio.gpio;
 
+import static io.github.furti.beagleio.gpio.util.BeagleAssert.isNotNull;
 import static io.github.furti.beagleio.gpio.util.BeagleAssert.isNull;
 
 import java.util.HashMap;
@@ -61,8 +62,24 @@ public abstract class AbstractBeagle implements Beagle
   @Override
   public void closePin(Pin pin) throws BeagleIOException
   {
-    // TODO Auto-generated method stub
+    findPinManager(pin)
+        .release()
+        .performOutstandingOperations();
 
+  }
+
+  /**
+   * Retrieves the already initialized pin and throws an exception if it was not found.
+   */
+  private PinManager findPinManager(Pin pin)
+  {
+    PinManager pinManager = pins.get(pin);
+
+    isNotNull(pinManager,
+        "Pin %s was not found. Did you forgot to initialize it? Always call beagle.initializePin(pin, direction) before using a Pin.",
+        pin);
+
+    return pinManager;
   }
 
   /**

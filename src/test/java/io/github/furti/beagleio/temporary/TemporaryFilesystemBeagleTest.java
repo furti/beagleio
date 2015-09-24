@@ -89,6 +89,17 @@ public class TemporaryFilesystemBeagleTest
     hasContent(pinDirectory.resolve("active_low"), activeLow ? "1" : "0", "ActiveLow: ");
   }
 
+  @Test(dataProvider = "pinReleasedData")
+  public void pinReleased(Pin pin) throws IOException
+  {
+    Beagle beagle = new TemporaryFilesystemBeagle();
+
+    beagle.initializePin(pin, Direction.IN);
+    beagle.closePin(pin);
+
+    fileNotExists(tmpDir.resolve(pin.toString()), "Pin Directory does not exist anymore");
+  }
+
   @DataProvider
   public Object[][] pinDirectoriesCreatedData()
   {
@@ -99,10 +110,23 @@ public class TemporaryFilesystemBeagleTest
   }
 
   @DataProvider
+  public Object[][] pinReleasedData()
+  {
+    return new Object[][] {
+        {Pin.P8_19},
+        {Pin.P9_30}
+    };
+  }
+
+
+  @DataProvider
   public Object[][] pinInitializedData()
   {
     return new Object[][] {
-        {Pin.P8_06, Direction.IN, false}
+        {Pin.P8_06, Direction.IN, false},
+        {Pin.P8_10, Direction.OUT, true},
+        {Pin.P9_13, Direction.OUT_HIGH, true},
+        {Pin.P8_22, Direction.OUT_LOW, false}
     };
   }
 
@@ -115,6 +139,11 @@ public class TemporaryFilesystemBeagleTest
   private void fileExists(Path path, String message)
   {
     assertThat(message, Files.exists(path), equalTo(true));
+  }
+
+  private void fileNotExists(Path path, String message)
+  {
+    assertThat(message, Files.notExists(path), equalTo(true));
   }
 
   private void hasContent(Path file, String expectedContent, String message) throws IOException

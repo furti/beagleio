@@ -26,7 +26,7 @@ import io.github.furti.beagleio.Direction;
  */
 public abstract class AbstractPinManager implements PinManager
 {
-  private List<OutstandingOperation<?>> operations = new ArrayList<>();
+  private List<OutstandingOperation> operations = new ArrayList<>();
 
   /*
    * (non-Javadoc)
@@ -52,6 +52,13 @@ public abstract class AbstractPinManager implements PinManager
     return this;
   }
 
+  @Override
+  public PinManager release()
+  {
+    addOperation(this::doRelease);
+    return this;
+  }
+
   /*
    * (non-Javadoc)
    * 
@@ -60,11 +67,11 @@ public abstract class AbstractPinManager implements PinManager
   @Override
   public PinManager performOutstandingOperations()
   {
-    Iterator<OutstandingOperation<?>> iterator = operations.iterator();
+    Iterator<OutstandingOperation> iterator = operations.iterator();
 
     while (iterator.hasNext())
     {
-      OutstandingOperation<?> operation = iterator.next();
+      OutstandingOperation operation = iterator.next();
       operation.perform();
       iterator.remove();
     }
@@ -74,14 +81,28 @@ public abstract class AbstractPinManager implements PinManager
 
   /**
    * Add an operation to the queue that should be performed the next time the
-   * {@link #performOutstandingOperations()} method is called.
+   * {@link #performOutstandingOperations()} method is called. The argument is passed as a parameter
+   * to the consumer when the operation is called.
    * 
    * @param consumer operation to call.
    * @param argument to use for the call of the consumer.
    */
   protected <T> void addOperation(Consumer<T> consumer, T argument)
   {
-    operations.add(new OutstandingOperation<T>(consumer, argument));
+    operations.add(new OutstandingConsumer<T>(consumer, argument));
+  }
+
+  /**
+   * Add an operation to the queue that should be performed the next time the
+   * {@link #performOutstandingOperations()} method is called. The operation does not need any
+   * parameters.
+   * 
+   * @param consumer operation to call.
+   * @param argument to use for the call of the consumer.
+   */
+  protected <T> void addOperation(OutstandingOperation operation)
+  {
+    operations.add(operation);
   }
 
   /**
@@ -99,25 +120,28 @@ public abstract class AbstractPinManager implements PinManager
   protected abstract void doSetActiveLow(boolean activeLow);
 
   /**
+   * Let the implementation actually release all open Resources.
+   */
+  protected abstract void doRelease();
+
+  /**
    * @author Daniel
    *
    * @param <T> type of argument
    */
-  public static class OutstandingOperation<T>
+  public static class OutstandingConsumer<T> implements OutstandingOperation
   {
     private Consumer<T> consumer;
     private T argument;
 
-    public OutstandingOperation(Consumer<T> consumer, T argument)
+    public OutstandingConsumer(Consumer<T> consumer, T argument)
     {
       super();
       this.consumer = consumer;
       this.argument = argument;
     }
 
-    /**
-     * Performs the actual operation
-     */
+    @Override
     public void perform()
     {
       consumer.accept(argument);

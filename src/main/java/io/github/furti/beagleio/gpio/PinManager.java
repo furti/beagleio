@@ -49,4 +49,15 @@ public interface PinManager
    * @return the instance for a fluent API
    */
   PinManager performOutstandingOperations();
+
+  /**
+   * Releases the Pin as it is not in use anymore.
+   * 
+   * <p>
+   * This should clean up all open Resources for this Pin.
+   * </p>
+   * 
+   * @return the instance for a fluent API
+   */
+  PinManager release();
 }
