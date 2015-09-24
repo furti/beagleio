@@ -25,11 +25,28 @@ public interface Beagle
   /**
    * Initializes the Pin with activeLow = false.
    *
-   * @see #initializePin(Direction, boolean) initializePin(Direction, boolean) for further details
+   * @see #initializePin(Pin, Direction, boolean) initializePin(Pin, Direction, boolean) for further
+   *      details
    */
   default void initializePin(Pin pin, Direction direction)
   {
     this.initializePin(pin, direction, false);
+  }
+
+  /**
+   * Initializes all the pins in the {@link PinGroup} with activeLow = false.
+   * 
+   * @param pins the pins to initialize
+   * 
+   * @see #initializePin(Pin, Direction, boolean) initializePin(Pin, Direction, boolean) for further
+   *      details
+   */
+  default void initializePins(PinGroup pins, Direction direction)
+  {
+    for (Pin pin : pins.getPins())
+    {
+      this.initializePin(pin, direction);
+    }
   }
 
   /**
@@ -59,12 +76,42 @@ public interface Beagle
   void initializePin(Pin pin, Direction direction, boolean activeLow) throws BeagleIOException;
 
   /**
+   * Initializes all the pins in the {@link PinGroup}.
+   * 
+   * @param pins the pins to initialize
+   * 
+   * @see #initializePin(Pin, Direction, boolean) initializePin(Pin, Direction, boolean) for further
+   *      details
+   */
+  default void initializePins(PinGroup pins, Direction direction, boolean activeLow)
+  {
+    for (Pin pin : pins.getPins())
+    {
+      this.initializePin(pin, direction, activeLow);
+    }
+  }
+
+  /**
    * Closes the Pin so that it can be used for other purposes.
    * 
    * @param pin the Pin to close.
    * @throws BeagleIOException if an execption occurs while closing the Pin.
    */
   void closePin(Pin pin) throws BeagleIOException;
+
+  /**
+   * Closes the Pins so that they can be used for other purposes.
+   * 
+   * @param pins the Pins to close.
+   * @throws BeagleIOException if an execption occurs while closing the Pins.
+   */
+  default void closePins(PinGroup pins) throws BeagleIOException
+  {
+    for (Pin pin : pins.getPins())
+    {
+      this.closePin(pin);
+    }
+  }
 
   /**
    * Releases the Beagle and closes all used Resources.
