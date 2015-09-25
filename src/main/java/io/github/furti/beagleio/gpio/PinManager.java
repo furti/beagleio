@@ -19,8 +19,10 @@ import io.github.furti.beagleio.PinValue;
 /**
  * Interface that encapsulates the operations that are available on a pin.
  * 
- * Each operation must not be executed immediate but must be queued instead. The queued operations
- * are then executed when the {@link #performOutstandingOperations()} method is called.
+ * Each operation that returns the PinManager for chaining must not be executed immediate but must
+ * be queued instead. The queued operations are then executed when the
+ * {@link #performOutstandingOperations()} method is called. This is in respect to the remote Beagle
+ * implemenation. So we can chain some operations and send them together over the wire.
  * 
  * @author Daniel
  *
@@ -44,12 +46,18 @@ public interface PinManager
    */
   PinManager setActiveLow(boolean activeLow);
 
+
   /**
-   * Executes all the queued operations.
-   * 
+   * @param value The value to set for the pin.
    * @return the instance for a fluent API
    */
-  PinManager performOutstandingOperations();
+  PinManager setValue(PinValue value);
+
+  /**
+   * 
+   * @return The value of the pin
+   */
+  PinValue getValue();
 
   /**
    * Releases the Pin as it is not in use anymore.
@@ -63,8 +71,9 @@ public interface PinManager
   PinManager release();
 
   /**
-   * @param value The value to set for the pin.
+   * Executes all the queued operations.
+   * 
    * @return the instance for a fluent API
    */
-  PinManager setValue(PinValue value);
+  PinManager performOutstandingOperations();
 }

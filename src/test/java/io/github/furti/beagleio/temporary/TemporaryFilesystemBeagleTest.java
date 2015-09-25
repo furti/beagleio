@@ -17,10 +17,12 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
+import java.io.BufferedWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.List;
 
 import org.testng.annotations.AfterMethod;
@@ -118,6 +120,40 @@ public class TemporaryFilesystemBeagleTest
 
       beagle.setPinValue(pin, PinValue.LOW);
       hasContent(pinDirectory.resolve("value"), "0", "Value should be low");
+    } finally
+    {
+      beagle.closePin(pin);
+    }
+  }
+
+  @Test
+  public void getPinValue() throws IOException
+  {
+    beagle = new TemporaryFilesystemBeagle();
+    Pin pin = Pin.P8_04;
+    Path pinDirectory = tmpDir.resolve(pin.toString());
+    Path valueFile = pinDirectory.resolve("value");
+
+    beagle.initializePin(pin, Direction.IN);
+
+    try
+    {
+      PinValue value = beagle.getPinValue(pin);
+      assertThat(value, equalTo(PinValue.LOW));
+
+      try (BufferedWriter writer = Files.newBufferedWriter(valueFile, StandardOpenOption.WRITE))
+      {
+        writer.write("1");
+      }
+      value = beagle.getPinValue(pin);
+      assertThat(value, equalTo(PinValue.HIGH));
+
+      try (BufferedWriter writer = Files.newBufferedWriter(valueFile, StandardOpenOption.WRITE))
+      {
+        writer.write("0");
+      }
+      value = beagle.getPinValue(pin);
+      assertThat(value, equalTo(PinValue.LOW));
     } finally
     {
       beagle.closePin(pin);

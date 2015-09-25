@@ -66,8 +66,7 @@ public abstract class AbstractBeagle implements Beagle
   @Override
   public PinValue getPinValue(Pin pin)
   {
-    // TODO Auto-generated method stub
-    return null;
+    return findPinManager(pin).getValue();
   }
 
   /*

@@ -78,6 +78,9 @@ public class TemporaryFilePinManager extends AbstractPinManager
       powerFile = createIfNotExists(pinDirectory, "power");
       ueventFile = createIfNotExists(pinDirectory, "uevent");
       valueFile = createIfNotExists(pinDirectory, "value");
+
+      // Initialize the value with LOW
+      writeToFile(valueFile, "0");
     } catch (IOException e)
     {
       throw new BeagleIOException("Error initializing Temporary Pin Directory " + pinDirectory, e);
@@ -120,7 +123,7 @@ public class TemporaryFilePinManager extends AbstractPinManager
   }
 
   @Override
-  protected PinValue doGetValue()
+  public PinValue getValue()
   {
     return PinValue.forValue(readFromFile(valueFile));
   }
