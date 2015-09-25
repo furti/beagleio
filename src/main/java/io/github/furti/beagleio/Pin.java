@@ -32,7 +32,7 @@ public enum Pin
 
   P9_23(49), P9_24(15), P9_25(117), P9_26(14), P9_27(115), P9_28(113), P9_29(111),
 
-  P9_30(112), P9_31(110);
+  P9_30(112), P9_31(110), LED_USR0(53), LED_USR1(54), LED_USR2(55), LED_USR3(56);
 
   private Integer kernelNumber;
 
