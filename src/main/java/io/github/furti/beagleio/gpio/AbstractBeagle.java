@@ -95,6 +95,8 @@ public abstract class AbstractBeagle implements Beagle
           .performOutstandingOperations();
     }
 
+    pins.clear();
+
     // After all pins are closed we let the implementation do its custom work.
     doRelease();
   }
