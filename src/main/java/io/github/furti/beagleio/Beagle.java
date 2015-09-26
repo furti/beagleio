@@ -135,6 +135,33 @@ public interface Beagle
   }
 
   /**
+   * Unlike {@link #getPinValue(Pin)} poll listens for changes on the Pins value and updates the
+   * {@link PollValue} accordingly. Depending on the operating system and the duration of a value
+   * change it is possible that some changes will be lost.
+   * 
+   * <p>
+   * For example when a Pin is changes it's state from LOW to HIGH for 10 milliseconds and there is
+   * no native hook or the Pins value is not polled in this time span, then this change will not be
+   * detected.
+   * </p>
+   * 
+   * <p>
+   * But this might as well happen with {@link #getPinValue(Pin)}. Nevertheless {@link #poll(Pin)}
+   * might be the better choice over {@link #getPinValue(Pin)} because when available native hooks
+   * are used to dedect changes and the Pins value must be read only when such a change occurs.
+   * </p>
+   * 
+   * <p>
+   * If not stated otherwise it is safe to call this Method everytime you need the polled value as
+   * implementations should cache a {@link PollValue}.
+   * </p>
+   * 
+   * @param pin The Pin to poll.
+   * @return A {@link PollValue} that is updated with the Pins actual value every time it changes.
+   */
+  PollValue poll(Pin pin);
+
+  /**
    * Closes the Pin so that it can be used for other purposes.
    * 
    * @param pin the Pin to close.

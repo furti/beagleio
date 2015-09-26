@@ -13,6 +13,9 @@
  */
 package io.github.furti.beagleio;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Main Entry Point for BeagleIO Applications.
  * 
@@ -23,6 +26,7 @@ public abstract class BeagleApplication
 {
   private Beagle beagle;
   private boolean running;
+  private List<PinListener> listeners = new ArrayList<>();
 
   /**
    * Actually starts the application.
@@ -38,12 +42,13 @@ public abstract class BeagleApplication
 
     try
     {
+      setupShutdownHook();
       initialize(beagle);
 
       startLoop();
     } finally
     {
-      beagle.release();
+      onShutdown();
     }
   }
 
@@ -68,6 +73,17 @@ public abstract class BeagleApplication
   protected final Beagle getBeagle()
   {
     return beagle;
+  }
+
+  /**
+   * @param pin The Pin to watch for changes
+   */
+  protected PinListener listen(Pin pin)
+  {
+    PinListener pinListener = new PinListener(pin, beagle);
+    listeners.add(pinListener);
+
+    return pinListener;
   }
 
   /**
@@ -117,10 +133,32 @@ public abstract class BeagleApplication
 
     while (running)
     {
+      // Execute all Listeners before running the applications run method
+      listeners.forEach(listener -> listener.execute());
+
       running = run(beagle);
     }
+  }
 
-    cleanup(beagle);
+  /**
+   * 
+   */
+  private void setupShutdownHook()
+  {
+    Runtime.getRuntime().addShutdownHook(new Thread(this::onShutdown));
+  }
+
+  private void onShutdown()
+  {
+    running = false;
+
+    try
+    {
+      cleanup(beagle);
+    } finally
+    {
+      beagle.release();
+    }
   }
 
   /**

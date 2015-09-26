@@ -24,6 +24,7 @@ import io.github.furti.beagleio.BeagleIOException;
 import io.github.furti.beagleio.Direction;
 import io.github.furti.beagleio.Pin;
 import io.github.furti.beagleio.PinValue;
+import io.github.furti.beagleio.PollValue;
 
 /**
  * Base implementation of a Beagle that handles some common functionality.
@@ -34,6 +35,7 @@ import io.github.furti.beagleio.PinValue;
 public abstract class AbstractBeagle implements Beagle
 {
   private Map<Pin, PinManager> pins = new HashMap<>();
+  private Map<Pin, PollValue> activePolls = new HashMap<>();
 
   /*
    * (non-Javadoc)
@@ -69,6 +71,17 @@ public abstract class AbstractBeagle implements Beagle
     return findPinManager(pin).getValue();
   }
 
+  @Override
+  public PollValue poll(Pin pin)
+  {
+    if (!activePolls.containsKey(pin))
+    {
+      activePolls.put(pin, findPinManager(pin).poll());
+    }
+
+    return activePolls.get(pin);
+  }
+
   /*
    * (non-Javadoc)
    * 
@@ -82,23 +95,30 @@ public abstract class AbstractBeagle implements Beagle
         .performOutstandingOperations();
 
     pins.remove(pin);
+    activePolls.remove(pin);
   }
 
   @Override
   public void release() throws BeagleIOException
   {
-    // At first we should release all pins so that all Resources are closed.
-    for (PinManager pinManager : pins.values())
+    try
     {
-      pinManager
-          .release()
-          .performOutstandingOperations();
+      // At first we should release all pins so that all Resources are closed.
+      for (PinManager pinManager : pins.values())
+      {
+        pinManager
+            .release()
+            .performOutstandingOperations();
+      }
+
+      pins.clear();
+
+      // After all pins are closed we let the implementation do its custom work.
+      doRelease();
+    } catch (Exception e)
+    {
+      throw new BeagleIOException("Error releasing Beagle", e);
     }
-
-    pins.clear();
-
-    // After all pins are closed we let the implementation do its custom work.
-    doRelease();
   }
 
   /**
@@ -123,6 +143,9 @@ public abstract class AbstractBeagle implements Beagle
 
   /**
    * Is called by the Beagle in the release phase to let implementations do custom cleanup.
+   * 
+   * @throws Exception implementations may throw any Exeptions. These Exceptions are catched and
+   *         wrapped inside an {@link BeagleIOException}
    */
-  protected abstract void doRelease();
+  protected abstract void doRelease() throws Exception;
 }

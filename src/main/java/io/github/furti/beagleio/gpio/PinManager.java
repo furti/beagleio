@@ -15,6 +15,7 @@ package io.github.furti.beagleio.gpio;
 
 import io.github.furti.beagleio.Direction;
 import io.github.furti.beagleio.PinValue;
+import io.github.furti.beagleio.PollValue;
 
 /**
  * Interface that encapsulates the operations that are available on a pin.
@@ -58,6 +59,13 @@ public interface PinManager
    * @return The value of the pin
    */
   PinValue getValue();
+
+  /**
+   * Starts polling the underlying Pin and updates the {@link PollValue} accordingly.
+   * 
+   * @return polled value
+   */
+  PollValue poll();
 
   /**
    * Releases the Pin as it is not in use anymore.

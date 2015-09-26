@@ -30,11 +30,6 @@ public final class FileUtils
   public static final boolean IS_POSIX =
       FileSystems.getDefault().supportedFileAttributeViews().contains("posix");
 
-  private FileUtils()
-  {
-
-  }
-
   /**
    * Recursivle reads the content of the directory and deletes it. After the directory is empty it
    * will be deleted;

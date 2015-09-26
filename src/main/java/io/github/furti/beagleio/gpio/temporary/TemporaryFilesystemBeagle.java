@@ -14,9 +14,13 @@
 package io.github.furti.beagleio.gpio.temporary;
 
 import java.io.IOException;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.WatchService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 
 import io.github.furti.beagleio.BeagleIOException;
 import io.github.furti.beagleio.Pin;
@@ -35,6 +39,9 @@ import io.github.furti.beagleio.gpio.util.FileUtils;
 public class TemporaryFilesystemBeagle extends AbstractBeagle
 {
   private Path baseDirectory;
+  private ScheduledExecutorService executor;
+  private WatchService watcher;
+
 
   /**
    * @throws IOException if an exception occurs creating the tmp directory.
@@ -43,6 +50,8 @@ public class TemporaryFilesystemBeagle extends AbstractBeagle
   public TemporaryFilesystemBeagle() throws IOException
   {
     this.setupTmpDirectory();
+    executor = Executors.newSingleThreadScheduledExecutor();
+    watcher = FileSystems.getDefault().newWatchService();
   }
 
   private void setupTmpDirectory() throws IOException
@@ -61,6 +70,8 @@ public class TemporaryFilesystemBeagle extends AbstractBeagle
   {
     try
     {
+      executor.shutdownNow();
+      watcher.close();
       FileUtils.deleteDirectory(baseDirectory);
     } catch (IOException e)
     {
@@ -77,6 +88,6 @@ public class TemporaryFilesystemBeagle extends AbstractBeagle
   @Override
   protected PinManager createPinManager(Pin pin)
   {
-    return new TemporaryFilePinManager(pin, baseDirectory);
+    return new TemporaryFilePinManager(pin, baseDirectory, executor, watcher);
   }
 }

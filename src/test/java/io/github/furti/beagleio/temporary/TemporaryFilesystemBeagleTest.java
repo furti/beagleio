@@ -33,6 +33,7 @@ import io.github.furti.beagleio.Beagle;
 import io.github.furti.beagleio.Direction;
 import io.github.furti.beagleio.Pin;
 import io.github.furti.beagleio.PinValue;
+import io.github.furti.beagleio.PollValue;
 import io.github.furti.beagleio.gpio.temporary.TemporaryFilesystemBeagle;
 import io.github.furti.beagleio.gpio.util.FileUtils;
 
@@ -158,6 +159,37 @@ public class TemporaryFilesystemBeagleTest
     {
       beagle.closePin(pin);
     }
+  }
+
+  @Test
+  public void poll() throws IOException, InterruptedException
+  {
+    beagle = new TemporaryFilesystemBeagle();
+    Pin pin = Pin.P8_04;
+    Path pinDirectory = tmpDir.resolve(pin.toString());
+    Path valueFile = pinDirectory.resolve("value");
+
+    beagle.initializePin(pin, Direction.IN);
+
+    PollValue value = beagle.poll(pin);
+    assertThat(value.getValue(), equalTo(PinValue.LOW));
+
+    try (BufferedWriter writer = Files.newBufferedWriter(valueFile, StandardOpenOption.WRITE))
+    {
+      writer.write("1");
+    }
+
+    // Sleep for some time to give the polling thread some time to get the change
+    Thread.sleep(1000);
+    assertThat(value.getValue(), equalTo(PinValue.HIGH));
+
+    try (BufferedWriter writer = Files.newBufferedWriter(valueFile, StandardOpenOption.WRITE))
+    {
+      writer.write("0");
+    }
+    // Sleep for some time to give the polling thread some time to get the change
+    Thread.sleep(1000);
+    assertThat(value.getValue(), equalTo(PinValue.LOW));
   }
 
   @DataProvider

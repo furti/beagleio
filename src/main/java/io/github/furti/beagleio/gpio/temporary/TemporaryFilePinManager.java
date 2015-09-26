@@ -20,15 +20,25 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.nio.file.StandardWatchEventKinds;
+import java.nio.file.WatchEvent;
+import java.nio.file.WatchKey;
+import java.nio.file.WatchService;
 import java.nio.file.attribute.PosixFilePermission;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 import io.github.furti.beagleio.BeagleIOException;
 import io.github.furti.beagleio.Direction;
 import io.github.furti.beagleio.Pin;
 import io.github.furti.beagleio.PinValue;
+import io.github.furti.beagleio.PollValue;
 import io.github.furti.beagleio.gpio.AbstractPinManager;
+import io.github.furti.beagleio.gpio.DefaultPollValue;
 import io.github.furti.beagleio.gpio.util.FileUtils;
 
 /**
@@ -37,6 +47,8 @@ import io.github.furti.beagleio.gpio.util.FileUtils;
  */
 public class TemporaryFilePinManager extends AbstractPinManager
 {
+  private ScheduledExecutorService executor;
+  private WatchService watcher;
   private Path pinDirectory;
   private Path activeLowFile;
   private Path directionFile;
@@ -44,13 +56,21 @@ public class TemporaryFilePinManager extends AbstractPinManager
   private Path powerFile;
   private Path ueventFile;
   private Path valueFile;
+  private WatchKey watchKey;
+  private DefaultPollValue pollValue;
+  private ScheduledFuture<?> pollFuture;
 
   /**
    * @param pin
    * @param baseDirectory
+   * @param watcher
+   * @param executor
    */
-  public TemporaryFilePinManager(Pin pin, Path baseDirectory)
+  public TemporaryFilePinManager(Pin pin, Path baseDirectory, ScheduledExecutorService executor,
+      WatchService watcher)
   {
+    this.watcher = watcher;
+    this.executor = executor;
     addOperation(this::initPinDirectory, baseDirectory.resolve(pin.toString()));
   }
 
@@ -128,6 +148,46 @@ public class TemporaryFilePinManager extends AbstractPinManager
     return PinValue.forValue(readFromFile(valueFile));
   }
 
+  @Override
+  public PollValue poll()
+  {
+    try
+    {
+      watchKey = pinDirectory.register(watcher, StandardWatchEventKinds.ENTRY_MODIFY);
+      pollValue = new DefaultPollValue(getValue());
+      pollFuture = executor.scheduleAtFixedRate(this::updatePollValue, 10, 10,
+          TimeUnit.MILLISECONDS);
+
+      return pollValue;
+    } catch (IOException e)
+    {
+      throw new BeagleIOException("Error polling file", e);
+    }
+  }
+
+  private void updatePollValue()
+  {
+    List<WatchEvent<?>> pollEvents = watchKey.pollEvents();
+
+    for (WatchEvent<?> event : pollEvents)
+    {
+      Path path = (Path) event.context();
+
+      /*
+       * If a change was detected in the value file we have to read the actual value and store it in
+       * the pollValue
+       */
+      if ("value".equals(path.toString()))
+      {
+        pollValue.setValue(getValue());
+        break;
+      }
+    }
+
+
+    watchKey.reset();
+  }
+
   /*
    * (non-Javadoc)
    * 
@@ -138,6 +198,12 @@ public class TemporaryFilePinManager extends AbstractPinManager
   {
     try
     {
+      if (pollValue != null)
+      {
+        watchKey.cancel();
+        pollFuture.cancel(true);
+      }
+
       FileUtils.deleteDirectory(pinDirectory);
     } catch (IOException e)
     {
