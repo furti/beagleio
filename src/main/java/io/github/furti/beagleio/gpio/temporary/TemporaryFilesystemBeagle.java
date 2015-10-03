@@ -14,18 +14,14 @@
 package io.github.furti.beagleio.gpio.temporary;
 
 import java.io.IOException;
-import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.WatchService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 
 import io.github.furti.beagleio.BeagleIOException;
 import io.github.furti.beagleio.Pin;
-import io.github.furti.beagleio.gpio.AbstractBeagle;
 import io.github.furti.beagleio.gpio.PinManager;
+import io.github.furti.beagleio.gpio.file.FileSystemBeagle;
 import io.github.furti.beagleio.gpio.util.FileUtils;
 
 /**
@@ -36,47 +32,37 @@ import io.github.furti.beagleio.gpio.util.FileUtils;
  * @author Daniel
  *
  */
-public class TemporaryFilesystemBeagle extends AbstractBeagle
+public class TemporaryFilesystemBeagle extends FileSystemBeagle
 {
-  private Path baseDirectory;
-  private ScheduledExecutorService executor;
-  private WatchService watcher;
-
 
   /**
-   * @throws IOException if an exception occurs creating the tmp directory.
-   * 
+   * @throws IOException If an exception occurs initializing the beagle
    */
   public TemporaryFilesystemBeagle() throws IOException
   {
-    this.setupTmpDirectory();
-    executor = Executors.newSingleThreadScheduledExecutor();
-    watcher = FileSystems.getDefault().newWatchService();
+    super();
   }
 
-  private void setupTmpDirectory() throws IOException
+  @Override
+  protected Path initBaseDirectory() throws IOException
   {
-    baseDirectory = Paths.get(System.getProperty("java.io.tmpdir"), "beagleio");
+    Path baseDirectory = Paths.get(System.getProperty("java.io.tmpdir"), "beagleio");
     Files.createDirectories(baseDirectory);
+
+    return baseDirectory;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see io.github.furti.beagleio.Beagle#release()
-   */
   @Override
   public void doRelease()
   {
     try
     {
-      executor.shutdownNow();
-      watcher.close();
-      FileUtils.deleteDirectory(baseDirectory);
+      FileUtils.deleteDirectory(getBaseDirectory());
     } catch (IOException e)
     {
-      throw new BeagleIOException("Error deleting tmp directory", e);
+      throw new BeagleIOException("Error deleting directory " + getBaseDirectory(), e);
     }
+    super.doRelease();
   }
 
   /*
@@ -88,6 +74,6 @@ public class TemporaryFilesystemBeagle extends AbstractBeagle
   @Override
   protected PinManager createPinManager(Pin pin)
   {
-    return new TemporaryFilePinManager(pin, baseDirectory, executor, watcher);
+    return new TemporaryFilePinManager(pin, getBaseDirectory(), getExecutor(), getWatcher());
   }
 }

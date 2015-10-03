@@ -13,28 +13,38 @@
  */
 package io.github.furti.beagleio.gpio.local;
 
-import io.github.furti.beagleio.BeagleIOException;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
 import io.github.furti.beagleio.Pin;
-import io.github.furti.beagleio.gpio.AbstractBeagle;
 import io.github.furti.beagleio.gpio.PinManager;
+import io.github.furti.beagleio.gpio.file.FileSystemBeagle;
 
 /**
  * @author Daniel
  *
  */
-public class LocalBeagle extends AbstractBeagle
+public class LocalBeagle extends FileSystemBeagle
 {
+
+  /**
+   * @throws IOException if an exception occurs initializing the Beagle
+   */
+  public LocalBeagle() throws IOException
+  {
+    super();
+  }
 
   /*
    * (non-Javadoc)
    * 
-   * @see io.github.furti.beagleio.Beagle#release()
+   * @see io.github.furti.beagleio.gpio.file.FileSystemBeagle#initBaseDirectory()
    */
   @Override
-  public void release() throws BeagleIOException
+  protected Path initBaseDirectory() throws IOException
   {
-    // TODO Auto-generated method stub
-
+    return Paths.get("/sys/class/gpio");
   }
 
   /*
@@ -46,18 +56,6 @@ public class LocalBeagle extends AbstractBeagle
   @Override
   protected PinManager createPinManager(Pin pin)
   {
-    // TODO Auto-generated method stub
     return null;
   }
-
-  /* (non-Javadoc)
-   * @see io.github.furti.beagleio.gpio.AbstractBeagle#doRelease()
-   */
-  @Override
-  protected void doRelease()
-  {
-    // TODO Auto-generated method stub
-    
-  }
-
 }

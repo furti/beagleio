@@ -67,10 +67,10 @@ public final class BeagleAssert
   {
     if (arguments != null && arguments.length > 0)
     {
-      throw new BeagleIOException(message, null);
+      throw new BeagleIOException(String.format(message, arguments), null);
     } else
     {
-      throw new BeagleIOException(String.format(message, arguments), null);
+      throw new BeagleIOException(message, null);
     }
   }
 }
